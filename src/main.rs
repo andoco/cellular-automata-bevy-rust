@@ -16,8 +16,14 @@ fn main() {
         .run();
 }
 
-#[derive(Component)]
+#[derive(Component, Clone, Copy)]
 struct Cell(UVec2);
+
+impl Into<UVec2> for Cell {
+    fn into(self) -> UVec2 {
+        self.0
+    }
+}
 
 fn setup(mut commands: Commands) {
     commands.spawn(Cell(UVec2::new(0, 0)));
@@ -27,6 +33,6 @@ fn update(mut pb: QueryPixelBuffer, cell_query: Query<&Cell>) {
     let mut frame = pb.frame();
 
     for cell in cell_query.iter() {
-        let _ = frame.set(cell.0, Pixel::WHITE);
+        let _ = frame.set(*cell, Pixel::WHITE);
     }
 }
