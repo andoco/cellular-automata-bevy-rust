@@ -10,7 +10,7 @@ fn main() {
         .add_systems(
             PreStartup,
             PixelBufferBuilder::new()
-                .with_size(PixelBufferSize::pixel_size((16, 16))) // only set pixel_size as size will be dynamically updated
+                .with_size(PixelBufferSize::pixel_size((8, 8))) // only set pixel_size as size will be dynamically updated
                 .with_fill(Fill::window()) // set fill to the window
                 .setup(),
         )
@@ -19,9 +19,9 @@ fn main() {
             FixedUpdate,
             (update, die)
                 .chain()
-                .run_if(on_fixed_timer(Duration::from_secs_f32(0.1))),
+                .run_if(on_fixed_timer(Duration::from_secs_f32(0.05))),
         )
-        .add_systems(Update, draw)
+        .add_systems(Update, (draw, input))
         .run();
 }
 
@@ -124,6 +124,20 @@ fn draw(mut pb: QueryPixelBuffer, cell_query: Query<&Cell>) {
 
     for cell in cell_query.iter() {
         let _ = frame.set(*cell, Pixel::WHITE);
+    }
+}
+
+fn input(keys: Res<Input<KeyCode>>, mut commands: Commands, mut pb: QueryPixelBuffer) {
+    if keys.just_pressed(KeyCode::Space) {
+        let frame = pb.frame();
+        let size = frame.size();
+        let mut rng = rand::thread_rng();
+
+        for _ in 0..100 {
+            let x = rng.gen_range(0..size.x);
+            let y = rng.gen_range(0..size.y);
+            commands.spawn(Cell((x, y)));
+        }
     }
 }
 
