@@ -1,4 +1,6 @@
-use bevy::prelude::*;
+use std::time::Duration;
+
+use bevy::{prelude::*, time::common_conditions::on_fixed_timer};
 use bevy_pixel_buffer::prelude::*;
 
 fn main() {
@@ -12,7 +14,10 @@ fn main() {
                 .setup(),
         )
         .add_systems(Startup, setup)
-        .add_systems(Update, update)
+        .add_systems(
+            FixedUpdate,
+            update.run_if(on_fixed_timer(Duration::from_secs(1))),
+        )
         .run();
 }
 
