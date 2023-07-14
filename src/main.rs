@@ -31,6 +31,45 @@ struct Cell((u32, u32));
 #[derive(Component)]
 struct Die;
 
+enum Direction {
+    N,
+    NE,
+    E,
+    SE,
+    S,
+    SW,
+    W,
+    NW,
+}
+
+impl Direction {
+    fn offset(&self) -> (i32, i32) {
+        match self {
+            Self::N => (0, -1),
+            Self::NE => (1, -1),
+            Self::E => (1, 0),
+            Self::SE => (1, 1),
+            Self::S => (0, 1),
+            Self::SW => (-1, 1),
+            Self::W => (-1, 0),
+            Self::NW => (-1, -1),
+        }
+    }
+
+    fn all() -> [Direction; 8] {
+        [
+            Self::N,
+            Self::NE,
+            Self::E,
+            Self::SE,
+            Self::S,
+            Self::SW,
+            Self::W,
+            Self::NW,
+        ]
+    }
+}
+
 impl Into<UVec2> for Cell {
     fn into(self) -> UVec2 {
         self.0.into()
@@ -42,20 +81,12 @@ impl Cell {
         let x = self.0 .0 as i32;
         let y = self.0 .1 as i32;
 
-        let all = [
-            (x - 1, y - 1),
-            (x, y - 1),
-            (x + 1, y - 1),
-            (x - 1, y),
-            (x + 1, y),
-            (x - 1, y + 1),
-            (x, y + 1),
-            (x + 1, y + 1),
-        ];
-
-        all.iter()
+        Direction::all()
+            .iter()
+            .map(|d| d.offset())
+            .map(|(ox, oy)| (x + ox, y + oy))
             .filter(|(x, y)| *x >= 0 && *x < bounds.x as i32 && *y >= 0 && *y < bounds.y as i32)
-            .map(|(x, y)| Cell((*x as u32, *y as u32)))
+            .map(|(x, y)| Cell((x as u32, y as u32)))
             .collect()
     }
 }
@@ -149,14 +180,14 @@ mod tests {
     fn cell_neighbors_should_return_all() {
         assert_eq!(
             vec![
-                Cell((0, 0)),
                 Cell((1, 0)),
                 Cell((2, 0)),
-                Cell((0, 1)),
                 Cell((2, 1)),
-                Cell((0, 2)),
+                Cell((2, 2)),
                 Cell((1, 2)),
-                Cell((2, 2))
+                Cell((0, 2)),
+                Cell((0, 1)),
+                Cell((0, 0)),
             ],
             Cell((1, 1)).neighbours(UVec2::new(3, 3))
         );
@@ -165,7 +196,7 @@ mod tests {
     #[test]
     fn cell_neighbors_should_return_in_bounds() {
         assert_eq!(
-            vec![Cell((1, 0)), Cell((0, 1)), Cell((1, 1)),],
+            vec![Cell((1, 0)), Cell((1, 1)), Cell((0, 1)),],
             Cell((0, 0)).neighbours(UVec2::new(2, 2))
         );
     }
